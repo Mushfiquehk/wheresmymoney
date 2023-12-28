@@ -1,0 +1,40 @@
+<!-- A form html template that takes in a date, with default as now date, takes
+ in amount, as a decimal number with 2 decimal places, tags and categories from a dropdown,
+ and user text as notes. THe form is defined in the .forms file -->
+
+{% extends "journal/index.html" %}
+
+{% block title %}Add Transaction{% endblock %}
+
+
+{% block nav %}
+    <a href="{% url 'journal:index' %}">Back</a>
+{% endblock %}
+
+{% block style %}
+    <style>
+        table, th, td {
+            border: 1px solid black;
+        }
+    </style>
+{% endblock %}
+
+
+{% block content %}
+
+<h1>Add Transaction</h1>
+
+{% if form.errors %}
+    <p style="color: red;">
+        Please correct the error{{ form.errors|pluralize }} below.
+    </p>
+{% endif %}
+<form action="{% url 'journal:transaction_create' %}" method="post">
+    {% csrf_token %}
+    <table>
+        {{ form.as_table }}
+    </table>
+    <input type="submit" value="Submit">
+</form>
+
+{% endblock %}

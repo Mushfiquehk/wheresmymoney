@@ -1,0 +1,10 @@
+{% extends 'journal/base.html' %}
+
+{% block content %}
+    <h1>Delete Transaction {{ transaction.tags }} of {{ transaction.amount }}</h1>
+    <p>Are you sure you want to delete this transaction?</p>
+    <form method="post">
+        {% csrf_token %}
+        <input type="submit" value="Delete">
+    </form>
+{% endblock %}

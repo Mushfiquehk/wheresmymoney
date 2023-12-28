@@ -1,0 +1,10 @@
+{% extends 'journal/base.html' %}
+
+{% block content %}
+    <h1>Update Category</h1>
+    <form method="post" action="{% url 'journal:category_update' category.name %}">
+        {% csrf_token %}
+        <button type="submit">Update</button>
+        <button href="{% url 'journal:category_delete' category.name %}">Delete</button>
+    </form>
+{% endblock %}

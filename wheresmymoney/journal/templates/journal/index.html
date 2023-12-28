@@ -1,0 +1,41 @@
+<!--  
+Receives the following variables from the view:
+
+category_transactions: {
+    name: {
+        budget: number
+        transactions: [
+            {
+                date: string,
+                amount: number,
+                description: string
+            },
+            ...
+        ]
+        total: number
+    }
+}
+
+ -->
+
+{% extends 'journal/base.html' %}
+
+{% block nav %}
+  <a href="{% url 'journal:transaction_create' %}">Add Transaction</a>
+  <a href="{% url 'journal:category_create' %}">Add Category</a>
+{% endblock %}
+
+{% block content %}
+  {% for name, items in category_transactions.items %}
+    <h2><a href="{% url 'journal:category_detail' name %}">{{ name }}</a> {{ items.budget }}</h2>
+    <ol>
+      {% for transaction in items.transactions %}
+        <li>
+          <a href="{% url 'journal:transaction_update' transaction.id %}">{{ transaction.date }} | {{ transaction.tags }} | {{ transaction.amount }}</a>
+        </li>
+      {% endfor %}
+    </ol>
+    <p>Balance: {{ items.total_spent }} / {{ items.budget }}</p>
+    <hr>
+  {% endfor %}
+{% endblock %}

@@ -1,0 +1,79 @@
+<!-- FILEPATH: /d:/wheresmymoney/wheresmymoney/journal/templates/journal/base.html 
+Expects:
+    None
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap');
+        
+        body {
+            font-family: 'Roboto Mono', monospace;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header {
+            background-color: #000;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        nav {
+            display: flex;
+            margin-top: 10px;
+            justify-content: space-around;
+        }
+        nav a {
+            padding: 10px;
+            border: 1px solid black;
+            border-radius: 5px;
+            text-decoration: none;
+            color: black;
+        }
+        nav a:hover {
+            background-color: #fad;
+        }
+
+        .content {
+            height: 80vh;
+            padding: 10px;
+        }
+        
+        .footer {
+            background-color: #000;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        {% block style %}{% endblock %}
+        
+    </style>
+
+    
+</head>
+<body>
+    <div class="header">
+        <h1>Expense Report</h1>
+    </div>
+
+    <nav>
+        {% block nav %}{% endblock %}
+    </nav>
+    
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+    
+    <div class="footer">
+        <p>Thank you for spending your money!</p>
+    </div>
+</body>
+</html>

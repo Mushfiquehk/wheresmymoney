@@ -1,0 +1,18 @@
+{% extends 'journal/base.html' %}
+
+{% block title %}Add Category{% endblock %}
+
+{% block nav %}
+    <a href="{% url 'journal:index' %}">Back</a>
+{% endblock %}
+
+{% block content %}
+    <h1>Add Category</h1>
+    <form action="{% url 'journal:category_create' %}" method="post">
+        {% csrf_token %}
+        <table>
+            {{ form.as_table }}
+        </table>
+        <input type="submit" value="Submit">
+    </form>
+{% endblock %}
