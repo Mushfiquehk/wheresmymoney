@@ -1,5 +1,10 @@
 {% extends 'journal/base.html' %}
 
+
+{% block nav %}
+    <a href="{% url 'journal:index' %}">Back</a>
+{% endblock %}
+
 {% block style %}
 <style>
   .transaction-tile {
@@ -14,7 +19,7 @@
   <h1>{{ category.name }} Transactions</h1>
   <p>Budget: {{ category.budget }}</p>
   <a href="{% url 'journal:category_update' category.name %}">Edit</a>
-    <a href="{% url 'journal:category_delete' category.name %}">Delete</a>
+  <a href="{% url 'journal:category_delete' category.name %}">Delete</a>
   
 
   <h3>Transactions:</h3>

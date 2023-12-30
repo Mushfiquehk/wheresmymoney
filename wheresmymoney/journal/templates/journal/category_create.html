@@ -1,5 +1,15 @@
 {% extends 'journal/base.html' %}
 
+{% block style %}
+<style>
+  .container {
+    margin: 0 auto;
+    width: 50%;
+    padding: 10px;
+  }
+</style>
+{% endblock %}
+
 {% block title %}Add Category{% endblock %}
 
 {% block nav %}
@@ -7,12 +17,30 @@
 {% endblock %}
 
 {% block content %}
+<div class="container">
     <h1>Add Category</h1>
     <form action="{% url 'journal:category_create' %}" method="post">
         {% csrf_token %}
-        <table>
-            {{ form.as_table }}
-        </table>
+        <div class="fieldWrapper">
+            {{ form.name.errors }}
+            <label for="{{ form.name.id_for_label }}">Name:</label>
+            {{ form.name }}
+        </div>
+
+        <div class="fieldWrapper">
+            {{ form.description.errors }}
+            <label for="{{ form.description.id_for_label }}">Budget:</label>
+            {{ form.budget }}
+        </div>
+
+        <div class="fieldWrapper">
+            {{ form.parent.errors }}
+            <label for="{{ form.parent.id_for_label }}">Type:</label>
+            {{ form.type }}
+        </div>
+
+
         <input type="submit" value="Submit">
     </form>
+</div>
 {% endblock %}

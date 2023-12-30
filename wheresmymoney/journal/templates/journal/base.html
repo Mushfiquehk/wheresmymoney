@@ -1,8 +1,3 @@
-<!-- FILEPATH: /d:/wheresmymoney/wheresmymoney/journal/templates/journal/base.html 
-Expects:
-    None
--->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,6 +11,8 @@ Expects:
             font-family: 'Roboto Mono', monospace;
             margin: 0;
             padding: 0;
+            display: flex;
+            flex-direction: column;
         }
         
         .header {
@@ -42,8 +39,10 @@ Expects:
         }
 
         .content {
-            height: 80vh;
+            display: flex;
             padding: 10px;
+            min-height: 80vh;    
+            justify-content: center;
         }
         
         .footer {
@@ -53,10 +52,10 @@ Expects:
             text-align: center;
         }
         
-        {% block style %}{% endblock %}
         
     </style>
-
+    {% block style %}{% endblock %}
+    
     
 </head>
 <body>

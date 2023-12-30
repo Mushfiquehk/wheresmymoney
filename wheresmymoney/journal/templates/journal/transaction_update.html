@@ -1,30 +1,46 @@
 {% extends 'journal/base.html' %}
 
+{% block style %}
+<style>
+  .container {
+      margin: 0 auto;
+      width: 50%;
+      padding: 10px;
+  }
+</style>
+{% endblock %}
+
+{% block nav %}
+  <a href="{% url 'journal:index' %}">Back</a>
+{% endblock %}
+
 {% block content %}
-    <h1>Update Transaction</h1>
-    <form method="post" action="{% url 'journal:transaction_update' transaction.id %}">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="id_amount">Amount:</label>
-            {{ form.amount }}
-        </div>
-        <div class="form-group">
-            <label for="id_date">Date:</label>
-            {{ form.date }}
-        </div>
-        <div class="form-group">
-            <label for="id_notes">Notes:</label>
-            {{ form.notes }}
-        </div>
-        <div class="form-group">
-            <label for="id_tags">Tags:</label>
-            {{ form.tags }}
-        </div>
-        <div class="form-group">
-            <label for="id_category">Category:</label>
-            {{ form.category }}
-        </div>
-        <button type="submit">Update</button>
-        <a href="{% url 'journal:transaction_delete' transaction.id %}">Delete</a>
-    </form>
+<div class="container">
+  <h1>Update Transaction</h1>
+  <form method="post" action="{% url 'journal:transaction_update' transaction.id %}">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="id_amount">Amount:</label>
+      {{ form.amount }}
+    </div>
+    <div class="form-group">
+      <label for="id_date">Date:</label>
+      {{ form.date }}
+    </div>
+    <div class="form-group">
+      <label for="id_notes">Notes:</label>
+      {{ form.notes }}
+    </div>
+    <div class="form-group">
+      <label for="id_tags">Tags:</label>
+      {{ form.tags }}
+    </div>
+    <div class="form-group">
+      <label for="id_category">Category:</label>
+      {{ form.category }}
+    </div>
+    <button type="submit">Update</button>
+    <a href="{% url 'journal:transaction_delete' transaction.id %}">Delete</a>
+  </form>
+</div>
 {% endblock %}

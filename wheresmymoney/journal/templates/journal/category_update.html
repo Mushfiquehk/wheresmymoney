@@ -1,10 +1,27 @@
 {% extends 'journal/base.html' %}
 
+{% block style %}
+<style>
+    .container {
+        margin: 0 auto;
+        width: 50%;
+        padding: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block nav %}
+    <a href="{% url 'journal:index' %}">Back</a>
+{% endblock %}
+
 {% block content %}
+<div class="container">
     <h1>Update Category</h1>
     <form method="post" action="{% url 'journal:category_update' category.name %}">
         {% csrf_token %}
+        {{ form.as_p }}
         <button type="submit">Update</button>
-        <button href="{% url 'journal:category_delete' category.name %}">Delete</button>
+        <a href="{% url 'journal:category_delete' category.name %}">Delete</a>
     </form>
+</div>
 {% endblock %}

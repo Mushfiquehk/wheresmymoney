@@ -1,10 +1,26 @@
 {% extends 'journal/base.html' %}
 
+{% block style %}
+    <style>
+        .container {
+            margin: 0 auto;
+            width: 50%;
+            padding: 10px;
+        }
+    </style>
+{% endblock %}
+
+{% block nav %}
+    <a href="{% url 'journal:index' %}">Back</a>
+{% endblock %}
+
 {% block content %}
+<div class='container'>
     <h1>Delete Transaction {{ transaction.tags }} of {{ transaction.amount }}</h1>
     <p>Are you sure you want to delete this transaction?</p>
     <form method="post">
         {% csrf_token %}
         <input type="submit" value="Delete">
     </form>
+</div>
 {% endblock %}

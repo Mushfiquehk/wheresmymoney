@@ -74,15 +74,29 @@ WSGI_APPLICATION = 'wheresmymoney.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+# DATABASES = {
+#         'default': {
+#             'ENGINE': 'djongo',
+#             'NAME': 'expense_tracker',
+#             'ENFORCE_SCHEMA': True,
+#             'CLIENT': {
+#                 'host': 'mongodb://localhost:27017/'
+#             }  
+#         }
+# }
+
 DATABASES = {
-        'default': {
-            'ENGINE': 'djongo',
-            'NAME': 'expense_tracker',
-            'ENFORCE_SCHEMA': True,
-            'CLIENT': {
-                'host': 'mongodb://localhost:27017/'
-            }  
+    'default': {
+        'ENGINE': 'mssql',
+        'NAME': 'journal',
+        'USER': '',       
+        'PASSWORD': '',
+        'HOST': 'localhost\\SQLEXPRESS',
+        'PORT': '1433',
+        'OPTIONS': {
+            'driver': 'ODBC Driver 17 for SQL Server',
         }
+    }
 }
 
 # Password validation

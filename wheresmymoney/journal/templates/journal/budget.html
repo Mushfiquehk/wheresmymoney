@@ -1,0 +1,157 @@
+{% extends 'journal/base.html' %}
+
+{% block title %}Weekly Budget{% endblock %}
+
+{% block style %}
+<style>
+    .container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    @media (min-width: 768px) {
+        .container {
+            width: 50%;
+        }
+    }
+    .page-header {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .tile {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+    }
+    .line-item {
+        display: grid;
+        grid-template-columns: 1fr 2fr 1fr 1fr;
+        padding: 5px 10px;
+    }
+    .line-item > :nth-child(4) {
+        text-align: right;
+    }
+    .h1 {
+        text-align: center;
+        font-size:2em;
+        font-style: bold;
+        font-weight: bold;
+        margin: 15px 0px;
+    }
+    .h2 {
+        text-align: center;
+        font-size: 1.5em;
+        font-style: bold;
+    }
+    .h3 {
+        text-align: center;
+        font-style: bold;
+    }
+    .kpi-net-worth {
+        text-align: center;
+        font-style: bold;
+        color: {% if net_income < 0 %}red{% else %}green{% endif %};
+    }
+    .kpi-net-target {
+        text-align: center;
+        font-style: bold;
+        color: {% if net_target < 0 %}red{% else %}green{% endif %};
+    }
+    .soften {
+        color: #999;
+    }
+    .category-title {
+        background-color: #eee;
+    }
+
+    .card {
+        padding: 10px;
+    }
+    .card-title {
+        display: flex;
+        justify-content: center;
+        font-size: 1.2em;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .numeric-values {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .numeric-values .value {
+        font-size: 1.2em;
+    }
+    .numeric-values .comparison {
+        font-size: 1em;
+        margin-left: 10px;
+    }
+    .positive {
+        color: green;
+    }
+    .negative {
+        color: red;
+    }
+</style>
+{% endblock %}
+
+{% block nav %}
+    <a href="{% url 'journal:index' %}">Back</a>
+{% endblock %}
+
+{% block content %}
+<div class='container'>
+    <div class='page-header'>
+        <div class='h1'>{{ time_name }}ly Budget</div>
+        <div class='card'>
+            <div class='card-title'>Income</div>
+            <div class='numeric-values'>
+                <div class='value {% if net_income < 0 %}negative{% else %}positive{% endif %}'>
+                    &dollar;{{ actual_income }}
+                    <span class='comparison'>(&dollar;{{ anticipated_income }})</span>
+                </div>
+            </div>
+        </div>
+        <div class='card'>
+            <div class='card-title'>Expenses</div>
+            <div class='numeric-values'>
+                <div class='value {% if net_expenses > 0 %}negative{% else %}positive{% endif %}'>
+                    &dollar;{{ actual_expenses }}
+                    <span class='comparison'>(&dollar;{{ anticipated_expenses }})</span>
+                </div>
+            </div>
+        </div>
+        <div class='card'>
+            <div class='card-title'>Net Worth</div>
+            <div class='numeric-values'>
+                <div class='value {% if actual_net_worth < 0 %}negative{% else %}positive{% endif %}'>
+                    &dollar;{{ actual_net_worth }}
+                    <span class='comparison'>(&dollar;{{ anticipated_net_worth }})</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <p></p>
+    {% for name, values in category_transactions.items %}
+        <div class='tile category-title'>
+            <div class='h3'><a href="{% url 'journal:category_update' name %}">{{ name }}</a></div>
+            <div>&dollar;{{ values.total_spent }} / &dollar;{{ values.budget }}</div>
+        </div>
+        {% for transaction in values.transactions %}
+            <div class='line-item'>
+                <div>{{ transaction.date }}</div>
+                <div><a href="{% url 'journal:transaction_update' transaction.id %}">{{ transaction.tags }}</a></div>
+                <div>...</div>
+                <div>&dollar;{{ transaction.amount }}</div>
+            </div>
+            {% empty %}
+                <div class='tile soften'>No transactions</div>
+        {% endfor %}
+    <hr>
+    {% endfor %}
+</div>
+{% endblock %}
