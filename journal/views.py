@@ -14,10 +14,83 @@ from .forms import TransactionForm, CategoryForm, LetterForm
 from django.views import generic
 from django.db.models import Sum
 
+# Utility class for budget calculations
+class BudgetCalculator:
+    """Helper class to calculate budget-related data based on time periods."""
+
+    NAME_TIME_FACTOR = {
+        "W": Decimal(7),
+        "M": Decimal(30),
+        "Y": Decimal(365),
+    }
+    
+    TIME_NAME = {
+        "W": "Week",
+        "M": "Month",
+        "Y": "Year",
+    }
+
+    @classmethod
+    def get_date_range(cls, time_period: str):
+        """Calculate start and end dates for the given time period."""
+        if time_period == "W":
+            start_date = datetime.date.today() - datetime.timedelta(days=datetime.date.today().weekday())
+            end_date = start_date + datetime.timedelta(days=6)
+        elif time_period == "M":
+            start_date = datetime.date.today().replace(day=1)
+            end_date = start_date + datetime.timedelta(days=calendar.monthrange(start_date.year, start_date.month)[1])
+        elif time_period == "Y":
+            start_date = datetime.date.today().replace(month=1, day=1)
+            end_date = start_date + datetime.timedelta(days=364)
+        else:
+            raise ValueError("Invalid time period")
+        
+        return start_date, end_date
+
+    @classmethod
+    def calculate_income(cls, time_period: str, start_date: datetime.date, end_date: datetime.date):
+        """Calculate actual and anticipated incomes."""
+        actual_income_transactions = Transaction.objects.filter(
+            amount__lt=0,
+            date__range=[start_date, end_date]
+        ).aggregate(Sum("amount"))["amount__sum"] or 0
+
+        actual_income = round(actual_income_transactions / cls.NAME_TIME_FACTOR[time_period] * cls.NAME_TIME_FACTOR[time_period], 2)
+
+        anticipated_income = sum(
+            round(category.budget / cls.NAME_TIME_FACTOR[category.type] * cls.NAME_TIME_FACTOR[time_period], 2)
+            for category in Category.objects.filter(budget__lt=0)
+        )
+        
+        return actual_income, anticipated_income
+
+    @classmethod
+    def categorize_expenses(cls, start_date: datetime.date, end_date: datetime.date, time_period: str):
+        """Categorize expenses by budget and transactions."""
+        req_expense_type = ['W'] if time_period == "W" else ['W', 'M'] if time_period == "M" else ['W', 'M', 'Y']
+        all_expenses = Category.objects.filter(type__in=req_expense_type).order_by("budget")
+        
+        all_transactions = Transaction.objects.filter(date__range=[start_date, end_date])
+        category_transactions = {}
+
+        for category in all_expenses:
+            category_transactions[category.name] = {
+                "budget": round(category.budget / cls.NAME_TIME_FACTOR[category.type] * cls.NAME_TIME_FACTOR[time_period], 2),
+                "transactions": [],
+                "total_spent": Decimal(0),
+            }
+
+            category_month_transactions = all_transactions.filter(category=category).order_by("-date")
+
+            for transaction in category_month_transactions:
+                category_transactions[category.name]["transactions"].append(transaction)
+                category_transactions[category.name]["total_spent"] += transaction.amount
+        
+        return category_transactions
 
 
 def index(request):
-    """ """
+    """Index view to display latest transactions."""
     template = loader.get_template("journal/index.html")
     context = {
         "latest_transactions": Transaction.objects.order_by("-date")[:5],
@@ -26,126 +99,27 @@ def index(request):
 
 
 def show_budget(request, time_period: str):
-    """Displays each category's budget, trasanctions, and total spent for the month
-
-    Args:
-        request (HttpRequest): The request object
-
-    Returns:
-        category_transactions = {
-            "category_name": {
-                "budget": 0,
-                "transactions": [],
-                "total_spent": 0,
-            },
-    ...}
-    """
-    # each type descriptor of category tells its expense frequency
-    name_time_factor = {
-        "W": Decimal(7),
-        "M": Decimal(30),
-        "Y": Decimal(365),
-    }
-    time_name = {
-        "W": "Week",
-        "M": "Month",
-        "Y": "Year",
-    }
-    num_days = name_time_factor[time_period]
-    start_date  = 0
-    end_date = 0
-
-    # set dates to get transactions
-    if time_period == "W":    
-        start_date = datetime.date.today() - datetime.timedelta(
-            days=datetime.date.today().weekday()
-        )
-        end_date = start_date + datetime.timedelta(days=6)
-    elif time_period == "M":
-        start_date = datetime.date.today().replace(day=1)
-        end_date = start_date + datetime.timedelta(
-            days=calendar.monthrange(start_date.year, start_date.month)[1]
-        )
-    elif time_period == "Y":
-        start_date = datetime.date.today().replace(month=1, day=1)
-        end_date = start_date + datetime.timedelta(days=364)
-
-    # get total actual income
-    actual_income = 0
-    actual_income_transactions = Transaction.objects.filter(
-                                amount__lt=0,
-                                date__range=[start_date, end_date]
-                                ).aggregate(Sum("amount"))["amount__sum"]
-    actual_income = round(actual_income_transactions / name_time_factor[time_period]
-                    * num_days,
-                    2,
-                    ) if actual_income is not None else 0
+    """Displays budget and transaction summary by category for a given time period."""
+    start_date, end_date = BudgetCalculator.get_date_range(time_period)
     
-    # get anticipated income
-    anticipated_income = 0
-    anticipated_income_categories = Category.objects.filter(
-                        budget__lt=0,
-                        )
-    if anticipated_income_categories:
-        for category in anticipated_income_categories:
-            anticipated_income += round(category.budget / name_time_factor[category.type] * num_days, 2)
+    actual_income, anticipated_income = BudgetCalculator.calculate_income(time_period, start_date, end_date)
+    category_transactions = BudgetCalculator.categorize_expenses(start_date, end_date, time_period)
+
+    anticipated_expenses = sum(cat["budget"] for cat in category_transactions.values() if cat["budget"] >= 0)
+    actual_expenses = sum(cat["total_spent"] for cat in category_transactions.values())
     
-    # get all categories and transactions
-    # iter over cats and calc budget, expenses (during time period)
-    # and add transactions to respective categories
-    req_expense_type = ['W', 'M', 'Y']
-    if time_period == "W":
-        req_expense_type = ['W']
-    if time_period == "M":
-        req_expense_type = ['W', 'M']
-    all_expenses = Category.objects.filter(
-        type__in=req_expense_type
-    ).order_by("budget")
-    all_transactions = Transaction.objects.filter(
-        date__range=[start_date, end_date]
-    )
-
-    # NOTE transactions without a category are not included
-
-    anticipated_expenses = 0
-    actual_expenses = 0
-    category_transactions = {}
-    for category in all_expenses:
-        category_transactions[category.name] = {
-            "budget": round(
-                category.budget / name_time_factor[category.type] * num_days, 2
-            ),
-            "transactions": [],
-            "total_spent": Decimal(0),
-        }
-        if category.budget >= 0:
-            anticipated_expenses += round(category.budget / name_time_factor[category.type] * num_days, 2)
-
-        category_month_transactions = all_transactions.filter(category=category).order_by(
-            "-date"
-        )
-        for transaction in category_month_transactions:
-            category_transactions[transaction.category.name]["transactions"].append(
-                transaction
-            )
-            category_transactions[transaction.category.name][
-                "total_spent"
-            ] += transaction.amount
-            if category.budget >= 0:
-                actual_expenses += transaction.amount
-
     template = loader.get_template("journal/budget.html")
     context = {
-        "time_name": time_name[time_period],
+        "time_name": BudgetCalculator.TIME_NAME[time_period],
         "category_transactions": category_transactions,
-        "anticipated_income": - anticipated_income,
-        "actual_income": - actual_income,
+        "anticipated_income": -anticipated_income,
+        "actual_income": -actual_income,
         "anticipated_expenses": anticipated_expenses,
         "actual_expenses": actual_expenses,
-        "net_income": - actual_income + anticipated_income,
+        "net_income": -actual_income + anticipated_income,
         "net_expenses": actual_expenses - anticipated_expenses,
-        "anticipated_net_worth": - anticipated_income - anticipated_expenses,
-        "actual_net_worth": - actual_income - actual_expenses,
+        "anticipated_net_worth": -anticipated_income - anticipated_expenses,
+        "actual_net_worth": -actual_income - actual_expenses,
     }
     return HttpResponse(template.render(context, request))
 
